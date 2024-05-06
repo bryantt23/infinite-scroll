@@ -10,7 +10,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [pageNumber, setPageNumber] = useState(1)
-  const [hasMore, setHasMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
 
   const fetchData = async () => {
     console.log("fetchData", query)
@@ -18,17 +18,21 @@ function App() {
     setError('');
     try {
       if (query.length < 3) {
+        setMovies([])
         return;
       }
       const response = await fetch(`https://www.omdbapi.com/?apikey=71949abe&s=${query}&page=${pageNumber}`);
       const data = await response.json();
       console.log(query, data)
-      if (!data.Search) {
-        setMovies([])
-      }
-      else if (data.Response === "True") {
-        setMovies([...movies, ...data.Search]);
-        setPageNumber(pageNumber => pageNumber + 1)
+      if (data.Response === "True") {
+        if (pageNumber === 1) {
+          setMovies(data.Search)
+        }
+        else {
+          setMovies(prevMovies => [...prevMovies, ...data.Search]);
+        }
+        setHasMore(data.Search.length > 0)
+        setPageNumber(prevPageNumber => prevPageNumber + 1)
       } else {
         setHasMore(false)
         setError(data.Error);
@@ -42,8 +46,10 @@ function App() {
   };
 
   useEffect(() => {
+    setPageNumber(1)
+    setHasMore(true)
     fetchData();
-  }, [query]);
+  }, [query]);//change query so reset everything
 
   console.log(movies)
 
