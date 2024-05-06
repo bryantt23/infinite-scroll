@@ -3,52 +3,52 @@ import { useState, useEffect } from 'react'
 import InfiniteScroll from "https://esm.sh/react-infinite-scroll-component";
 // https://www.npmjs.com/package/react-infinite-scroll-component
 
+const states = {
+  loading: "Loading",
+  success: "Success",
+  noMore: "NoMore",
+  error: "Error"
+};
 
 function App() {
   const [query, setQuery] = useState('');
   const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [state, setState] = useState(states.loading)
   const [pageNumber, setPageNumber] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
+  const [error, setError] = useState('');
 
   const fetchData = async () => {
     console.log("fetchData", query)
-    setLoading(true);
-    setError('');
+    setState(states.loading)
     try {
-      if (query.length < 3) {
-        setMovies([])
-        return;
-      }
       const response = await fetch(`https://www.omdbapi.com/?apikey=71949abe&s=${query}&page=${pageNumber}`);
       const data = await response.json();
-      console.log(query, data)
       if (data.Response === "True") {
-        if (pageNumber === 1) {
-          setMovies(data.Search)
+        const newMovies = pageNumber === 1 ? data.Search : [...movies, ...data.Search]
+        setMovies(newMovies)
+        if (data.Search.length > 0) {
+          setPageNumber(prevPageNumber => prevPageNumber + 1)
+          setState(states.success)
         }
         else {
-          setMovies(prevMovies => [...prevMovies, ...data.Search]);
+          setState(states.noMore)
         }
-        setHasMore(data.Search.length > 0)
-        setPageNumber(prevPageNumber => prevPageNumber + 1)
       } else {
-        setHasMore(false)
+        setState(states.error)
         setError(data.Error);
       }
     } catch (error) {
       console.error(error)
       setError('Failed to fetch data');
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    setPageNumber(1)
-    setHasMore(true)
-    fetchData();
+    if (query.length >= 3) {
+      setPageNumber(1)
+      setMovies([])
+      fetchData();
+    }
   }, [query]);//change query so reset everything
 
   console.log(movies)
@@ -61,23 +61,13 @@ function App() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      {loading && <div>Loading...</div>}
-      {error && <div>{error}</div>}
-      {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-        {movies.map((movie) => (
-          <div key={movie.imdbID} style={{ width: '200px' }}>
-            <img src={movie.Poster} alt={movie.Title} style={{ width: '100%' }} />
-            <h4>{movie.Title}</h4>
-            <p>{movie.Year}</p>
-          </div>
-        ))}
-      </div> */}
-
+      {state.loading && <div>Loading...</div>}
+      {state.error && <div>{error}</div>}
 
       <InfiniteScroll
         dataLength={movies.length} //This is important field to render the next data
         next={fetchData}
-        hasMore={hasMore}
+        hasMore={state === states.success}
         loader={<h4>Loading...</h4>}
         endMessage={
           <p style={{ textAlign: 'center' }}>
