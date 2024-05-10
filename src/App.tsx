@@ -1,7 +1,31 @@
 import { useState, useEffect } from 'react';
 import InfiniteScroll from 'https://esm.sh/react-infinite-scroll-component';
 // https://www.npmjs.com/package/react-infinite-scroll-component
-
+/*
+<InfiniteScroll
+  dataLength={items.length} //This is important field to render the next data
+  next={fetchData}
+  hasMore={true}
+  loader={<h4>Loading...</h4>}
+  endMessage={
+    <p style={{ textAlign: 'center' }}>
+      <b>Yay! You have seen it all</b>
+    </p>
+  }
+  // below props only if you need pull down functionality
+  refreshFunction={this.refresh}
+  pullDownToRefresh
+  pullDownToRefreshThreshold={50}
+  pullDownToRefreshContent={
+    <h3 style={{ textAlign: 'center' }}>&#8595; Pull down to refresh</h3>
+  }
+  releaseToRefreshContent={
+    <h3 style={{ textAlign: 'center' }}>&#8593; Release to refresh</h3>
+  }
+>
+  {items}
+</InfiniteScroll>;
+*/
 interface Movie {
   Title: string;
   Year: string;
@@ -13,12 +37,11 @@ interface Movie {
 function App() {
   const [query, setQuery] = useState('');
   const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(false);
+
   const [error, setError] = useState('');
 
   const fetchData = async () => {
     console.log('fetchData', query);
-    setLoading(true);
     setError('');
     try {
       if (query.length < 3) {
@@ -39,8 +62,6 @@ function App() {
     } catch (error) {
       console.error(error);
       setError('Failed to fetch data');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -58,7 +79,6 @@ function App() {
         value={query}
         onChange={e => setQuery(e.target.value)}
       />
-      {loading && <div>Loading...</div>}
       {error && <div>{error}</div>}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
         {movies.map(movie => (
