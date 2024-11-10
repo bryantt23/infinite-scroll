@@ -69,7 +69,7 @@ function App() {
     fetchData();
   }, [query]);
 
-  console.log(movies);
+  console.log(movies.length);
 
   return (
     <div>
