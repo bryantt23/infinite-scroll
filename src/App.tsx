@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import InfiniteScroll from 'https://esm.sh/react-infinite-scroll-component';
+import InfiniteScroll from 'react-infinite-scroll-component';
 // https://www.npmjs.com/package/react-infinite-scroll-component
 /*
 <InfiniteScroll
